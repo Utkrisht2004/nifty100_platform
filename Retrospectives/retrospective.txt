@@ -1,0 +1,39 @@
+Sprint 1 Retrospective: Nifty 100 ETL Pipeline
+1. Sprint Goals Summary
+
+    Objective: Build a robust, validated, and repeatable data pipeline to ingest Nifty 100 raw financial data into a structured SQLite data warehouse.
+
+    Outcome: 10/10 tables populated, 36/36 unit tests passed, and pipeline successfully signed off on DoD criteria.
+
+2. Key Technical Achievements
+
+    Automated Normalization: Engineered a regex-based normaliser.py to handle the fragmented financial date formats (Mar-23, FY24, March-2023) and ticker naming inconsistencies.
+
+    Validation Framework: Implemented a DataValidator class enforcing 16 distinct Data Quality rules, ensuring relational integrity and financial consistency.
+
+    Idempotent Loading: Developed a "clean-start" pipeline that programmatically resets the SQLite database and enforces foreign key constraints, allowing for repeatable data loads.
+
+3. Challenges & Solutions
+Challenge	Technical Resolution
+Orphaned Records	Implemented clean_data_for_db to filter out child table records not present in the master companies list.
+Schema Constraints	Updated loader logic to handle NaN values and data type coercion before to_sql execution.
+Test Failures	Resolved KeyError exceptions in testing by ensuring mock DataFrames contained all mandatory columns expected by the loader.
+4. Sprint Metrics (DoD Verification)
+
+    Tests: 36 Unit Tests (covering Normalization, Validation, and Data Cleaning).
+
+    Data Health: 0 CRITICAL integrity violations; 2,339 WARNING-level flags logged for analyst review.
+
+    Coverage: 92 Companies, 13+ years of P&L history per company.
+
+5. Lessons Learned for Sprint 2
+
+    Data-First Testing: We learned that defining unit tests before writing the complex cleaning logic significantly reduced development time and caught edge cases (like the Regex year-parse error) early.
+
+    Strict Enforcements: Starting with a schema.sql that enforces NOT NULL and FOREIGN KEY constraints saved us from downstream analytics errors.
+
+    Strategy for Sprint 2: Use the DataValidator logs to guide our error-handling priority when we begin calculating complex financial ratios.
+
+Prototypical Data Pipeline Architecture
+
+To provide a visual summary of the system we have just successfully built, this diagram shows how your code flows from raw files to the final database.
