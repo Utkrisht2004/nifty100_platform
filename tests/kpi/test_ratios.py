@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 from src.analytics.ratios import (
     calc_net_profit_margin, calc_operating_profit_margin, calc_return_on_equity, 
     calc_return_on_capital_employed, calc_return_on_assets,
-    calc_debt_to_equity, calc_interest_coverage_ratio, calc_net_debt, calc_asset_turnover
+    calc_debt_to_equity, calc_interest_coverage, calc_net_debt, calc_asset_turnover
 )
 
 # --- DAY 08 TESTS ---
@@ -56,19 +56,19 @@ def test_de_financial_suppresses_flag():
     assert flag is False
 
 def test_icr_normal_case():
-    icr, label, flag = calc_interest_coverage_ratio(operating_profit=50, other_income=10, interest=20)
+    icr, label, flag = calc_interest_coverage(operating_profit=50, other_income=10, interest=20)
     assert icr == 3.0
     assert label == "Healthy"
     assert flag is False
 
 def test_icr_interest_zero_returns_none_debt_free():
-    icr, label, flag = calc_interest_coverage_ratio(operating_profit=50, other_income=10, interest=0)
+    icr, label, flag = calc_interest_coverage(operating_profit=50, other_income=10, interest=0)
     assert icr is None
     assert label == "Debt Free"
     assert flag is False
 
 def test_icr_warning_flag():
-    icr, label, flag = calc_interest_coverage_ratio(operating_profit=10, other_income=2, interest=10)
+    icr, label, flag = calc_interest_coverage(operating_profit=10, other_income=2, interest=10)
     assert icr == 1.2
     assert label == "At Risk"
     assert flag is True
@@ -79,3 +79,4 @@ def test_net_debt():
 def test_asset_turnover():
     assert calc_asset_turnover(sales=500, total_assets=250) == 2.0
     assert calc_asset_turnover(sales=500, total_assets=0) is None
+
