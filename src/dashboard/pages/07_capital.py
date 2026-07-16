@@ -13,19 +13,23 @@ st.markdown("Visualizing how the Nifty 100 deploys capital using fundamental alg
 
 @st.cache_data(ttl=600)
 def load_capital_data():
-    # PATCH: Dynamically fetch the latest valid year as an integer
     conn = get_db_connection()
-    try:
-        latest_year = pd.read_sql_query("SELECT MAX(CAST(year AS INTEGER)) as max_year FROM financial_ratios", conn).iloc[0]['max_year']
-    except:
-        latest_year = 2023 # Safe fallback
+    ratios = pd.read_sql_query("SELECT * FROM financial_ratios", conn)
     conn.close()
     
-    ratios = get_ratios(year=int(latest_year))
+    if ratios.empty: return pd.DataFrame()
+    
+    ratios['year_str'] = ratios['year'].astype(str)
+    
+    # THE FIX: Use regex to extract only valid 4-digit years, convert to int to find the true max, then back to string
+    valid_years = ratios['year_str'].str.extract(r'^(\d{4})')[0].dropna()
+    if not valid_years.empty:
+        latest_year_base = str(valid_years.astype(int).max())
+        # Filter rows that start with the true maximum year (e.g., '2023' or '2024')
+        ratios = ratios[ratios['year_str'].str.startswith(latest_year_base)]
+    
     companies = get_companies()
     sectors = get_sectors()
-    
-    if ratios.empty: return pd.DataFrame()
     
     df = pd.merge(ratios, companies[['id', 'company_name']], left_on='company_id', right_on='id', how='left')
     df = pd.merge(df, sectors, on='company_id', how='left')

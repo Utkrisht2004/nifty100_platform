@@ -38,11 +38,17 @@ if not available_years:
 
 selected_year = st.sidebar.selectbox("Select Financial Year", options=available_years)
 
-# --- DATA LOADING (PATCHED) ---
+# --- DATA LOADING (BULLETPROOF PANDAS FILTER) ---
 @st.cache_data(ttl=600)
 def load_home_data(year):
-    # PATCH: Explicitly cast the Streamlit string back to an integer for SQLite
-    ratios = get_ratios(year=int(year))
+    conn = get_db_connection()
+    ratios = pd.read_sql_query("SELECT * FROM financial_ratios", conn)
+    conn.close()
+    
+    # THE FIX: Match any row where the year string STARTS WITH the 4-digit year from the dropdown
+    ratios['year_str'] = ratios['year'].astype(str)
+    ratios = ratios[ratios['year_str'].str.startswith(str(year))]
+    
     sectors = get_sectors()
     companies = get_companies()
     
@@ -54,6 +60,9 @@ def load_home_data(year):
     return pd.DataFrame()
 
 df = load_home_data(selected_year)
+
+st.warning(f"DEBUG: Dataframe has {len(df)} rows.")
+st.write("DEBUG RAW DATA:", df.head())
 
 if df.empty:
     st.warning(f"No fundamental data available for the year {selected_year}.")
@@ -68,7 +77,7 @@ else:
     median_de = df['debt_to_equity'].median()
     median_rev_cagr = df['revenue_cagr_5yr'].median()
     total_companies = len(df)
-    debt_free_count = len(df[df['icr_label'] == 'Debt Free'])
+    debt_free_count = len(df[df['icr_label'] == 'Debt Free']) if 'icr_label' in df.columns else 0
     median_pe = df['pe_ratio'].median() if 'pe_ratio' in df.columns else None
     
     col1.metric("Average ROE", f"{avg_roe:.1f}%" if pd.notna(avg_roe) else "N/A")

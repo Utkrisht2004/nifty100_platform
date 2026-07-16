@@ -1,16 +1,15 @@
 ﻿import streamlit as st
 import pandas as pd
-import requests
+import urllib.parse
 import sys
 import os
-import concurrent.futures
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
 from src.dashboard.utils.db import get_companies
 
 st.set_page_config(page_title="Annual Reports", layout="wide")
 st.title("Annual Reports Library 📚")
-st.markdown("Direct links to BSE / NSE PDF filings for Nifty 100 companies.")
+st.markdown("Direct portal links and search operators for Nifty 100 company filings.")
 
 companies = get_companies()
 
@@ -21,39 +20,31 @@ if companies.empty:
 companies['search_key'] = companies['id'] + " - " + companies['company_name']
 selected_search = st.selectbox("Search for a company to view filings:", options=[""] + companies['search_key'].tolist())
 
-def check_url(url):
-    """Pings the URL to see if it returns a 200 OK or 404."""
-    try:
-        # Use a short timeout so the UI doesn't hang forever
-        res = requests.head(url, timeout=1.5)
-        return res.status_code < 400
-    except requests.RequestException:
-        return False
-
 if selected_search:
     ticker = selected_search.split(" - ")[0]
-    st.subheader(f"Available Documents for {ticker}")
+    company_name = selected_search.split(" - ")[1]
+    
+    st.subheader(f"Document Portals for {company_name} ({ticker})")
     st.markdown("---")
     
-    # We will check the last 3 years
-    years = [2023, 2022, 2021]
+    col1, col2 = st.columns(2)
     
-    for year in years:
-        col1, col2 = st.columns([1, 4])
+    with col1:
+        st.markdown("### 🔍 Direct PDF Search")
+        st.markdown("BSE and NSE block automated downloads. Click below to fetch the official PDFs directly via web search operators.")
         
-        # Constructing a generic mock BSE structure for the sake of the exercise
-        url = f"https://www.bseindia.com/bseplus/AnnualReport/{ticker}/{ticker}_{year}.pdf"
+        for year in [2024, 2023, 2022]:
+            # Creates a URL that automatically searches for the exact PDF
+            query = urllib.parse.quote(f'"{company_name}" OR "{ticker}" "Annual Report" {year} filetype:pdf')
+            google_url = f"https://www.google.com/search?q={query}"
+            st.markdown(f"📄 **FY {year}:** [Find Official PDF]({google_url})")
+            
+    with col2:
+        st.markdown("### 🏢 Financial Aggregators")
+        st.markdown("View all historical annual reports, concall transcripts, and investor presentations.")
         
-        with col1:
-            st.markdown(f"**FY {year}-{str(year+1)[-2:]}**")
-            
-        with col2:
-            with st.spinner("Checking availability..."):
-                is_valid = check_url(url)
-            
-            if is_valid:
-                st.markdown(f"✅ [Download {year} Annual Report (PDF)]({url})")
-            else:
-                st.markdown(f"🚨 <span style='color:red; font-weight:bold; border: 1px solid red; padding: 2px 6px; border-radius: 4px;'>Report Unavailable (404)</span>", unsafe_allow_html=True)
-                
-        st.markdown("") # Spacing
+        screener_url = f"https://www.screener.in/company/{ticker}/consolidated/#documents"
+        st.markdown(f"🔗 **Screener.in:** [View All Documents]({screener_url})")
+        
+        nse_url = f"https://www.nseindia.com/get-quotes/equity?symbol={ticker}"
+        st.markdown(f"🔗 **NSE India:** [Corporate Disclosures]({nse_url})")
