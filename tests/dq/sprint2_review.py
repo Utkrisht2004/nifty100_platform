@@ -3,7 +3,7 @@ import pandas as pd
 from pathlib import Path
 
 base_dir = Path(__file__).resolve().parent.parent.parent
-db_path = base_dir / 'data' / 'nifty100.db'
+db_path = base_dir / "data" / "nifty100.db"
 conn = sqlite3.connect(db_path)
 
 print("\n--- SPRINT 2: FINAL REVIEW & SCREENER (PER-COMPANY LATEST YEAR) ---")
@@ -28,7 +28,9 @@ WHERE return_on_equity_pct > 15
 ORDER BY ROE_pct DESC
 """
 screener_df = pd.read_sql_query(query_screen, conn)
-print(f"\n[2] Screener Preview Result Count: {len(screener_df)} companies (Target: 15-50)")
+print(
+    f"\n[2] Screener Preview Result Count: {len(screener_df)} companies (Target: 15-50)"
+)
 print("Top 5 Screener Candidates:")
 print(screener_df.head().to_string(index=False))
 

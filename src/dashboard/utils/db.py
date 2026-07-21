@@ -4,11 +4,13 @@ import pandas as pd
 from pathlib import Path
 
 # Locate DB relative to this file: src/dashboard/utils/db.py -> ../../../data/nifty100.db
-DB_PATH = Path(__file__).resolve().parent.parent.parent.parent / 'data' / 'nifty100.db'
+DB_PATH = Path(__file__).resolve().parent.parent.parent.parent / "data" / "nifty100.db"
+
 
 def get_db_connection():
     """Returns a fresh SQLite connection."""
     return sqlite3.connect(DB_PATH)
+
 
 @st.cache_data(ttl=600)
 def get_companies():
@@ -17,12 +19,14 @@ def get_companies():
     conn.close()
     return df
 
+
 @st.cache_data(ttl=600)
 def get_sectors():
     conn = get_db_connection()
     df = pd.read_sql_query("SELECT * FROM sectors", conn)
     conn.close()
     return df
+
 
 @st.cache_data(ttl=600)
 def get_ratios(ticker=None, year=None):
@@ -39,33 +43,48 @@ def get_ratios(ticker=None, year=None):
     conn.close()
     return df
 
+
 @st.cache_data(ttl=600)
 def get_pl(ticker):
     conn = get_db_connection()
-    df = pd.read_sql_query("SELECT * FROM profitandloss WHERE company_id = ?", conn, params=(ticker,))
+    df = pd.read_sql_query(
+        "SELECT * FROM profitandloss WHERE company_id = ?", conn, params=(ticker,)
+    )
     conn.close()
     return df
+
 
 @st.cache_data(ttl=600)
 def get_bs(ticker):
     conn = get_db_connection()
-    df = pd.read_sql_query("SELECT * FROM balancesheet WHERE company_id = ?", conn, params=(ticker,))
+    df = pd.read_sql_query(
+        "SELECT * FROM balancesheet WHERE company_id = ?", conn, params=(ticker,)
+    )
     conn.close()
     return df
+
 
 @st.cache_data(ttl=600)
 def get_cf(ticker):
     conn = get_db_connection()
-    df = pd.read_sql_query("SELECT * FROM cashflow WHERE company_id = ?", conn, params=(ticker,))
+    df = pd.read_sql_query(
+        "SELECT * FROM cashflow WHERE company_id = ?", conn, params=(ticker,)
+    )
     conn.close()
     return df
+
 
 @st.cache_data(ttl=600)
 def get_peers(group_name):
     conn = get_db_connection()
-    df = pd.read_sql_query("SELECT * FROM peer_percentiles WHERE peer_group_name = ?", conn, params=(group_name,))
+    df = pd.read_sql_query(
+        "SELECT * FROM peer_percentiles WHERE peer_group_name = ?",
+        conn,
+        params=(group_name,),
+    )
     conn.close()
     return df
+
 
 @st.cache_data(ttl=600)
 def get_valuation(ticker):

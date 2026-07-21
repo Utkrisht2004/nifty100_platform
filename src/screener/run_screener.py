@@ -4,13 +4,13 @@ from pathlib import Path
 import sys
 import os
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 from src.screener.engine import ScreenerEngine
 from src.screener.scoring import calculate_composite_score
 from src.screener.exporter import export_to_excel
 
 base_dir = Path(__file__).resolve().parent.parent.parent
-db_path = base_dir / 'data' / 'nifty100.db'
+db_path = base_dir / "data" / "nifty100.db"
 
 # 1. Load Data
 conn = sqlite3.connect(db_path)
@@ -30,7 +30,7 @@ df_scored = calculate_composite_score(df_latest)
 
 # 3. Filter via Presets
 engine = ScreenerEngine()
-presets = engine.config.get('presets', {})
+presets = engine.config.get("presets", {})
 preset_results = {}
 
 print("Applying Filters...")
